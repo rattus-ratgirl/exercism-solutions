@@ -1,0 +1,64 @@
+; Everything that comes after a semicolon (;) is a comment
+
+; Define the constants 'RED', 'GREEN' and 'BLUE'
+; They must be accessible from other source files
+
+section .data
+
+    global RED
+    RED dd 0xFF000000
+
+    global GREEN
+    GREEN dd 0x00FF0000
+
+    global BLUE
+    BLUE dd 0x0000FF00
+
+; Define the variable 'base_color' with the default value of 0xFFFFFF00
+; It must be accessible from other source files
+
+    global base_color
+    base_color dd 0xFFFFFF00
+
+    extern combining_function
+
+section .text
+
+; You should implement functions in the .text section
+
+; the global directive makes a function visible to the test files
+global get_color_value
+get_color_value:
+    ; This function takes the address for a color as parameter
+    ; It must return the 32-bit value associated with the color
+    mov eax, [rdi]
+    ret
+
+global add_base_color
+add_base_color:
+    mov eax, dword [rdi]        ; load 32-bit colour value from address in rdi
+    mov dword [rel base_color], eax ; store it into base_color
+    ret
+
+global make_color_combination
+make_color_combination:
+    ; This function takes the following parameters:
+    ; - The address where the 32-bit value for the combined color should be stored.
+    ; - The address of a secondary color in the color table.
+    ; It should call 'combining_function' with the 32-bit value for base and secondary colors and store the result in the passed address
+    ; This function has no return value
+    
+    push rdi ; store first parameter
+    
+    mov edi, dword [rel base_color]
+    mov esi, dword [rsi]
+    
+    call combining_function
+
+    pop rdi   ; get first parameter again
+    mov dword [rdi], eax
+    ret
+
+%ifidn __OUTPUT_FORMAT__,elf64
+section .note.GNU-stack noalloc noexec nowrite progbits
+%endif
